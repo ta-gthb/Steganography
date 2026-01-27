@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Steganography - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">🔐 Image Steganography</h1>
+            <p class="tagline">Hide and Reveal Secrets in Images</p>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>Welcome to Image Steganography</h2>
+            <p>Securely hide messages inside images using LSB (Least Significant Bit) encoding.</p>
+        </div>
+
+        <div class="options-grid">
+            <div class="option-card">
+                <div class="option-icon">📝</div>
+                <h3>Encode Message</h3>
+                <p>Hide a secret message inside an image file and download the encoded image.</p>
+                <a href="/encode" class="btn btn-primary">Start Encoding</a>
+            </div>
+
+            <div class="option-card">
+                <div class="option-icon">🔍</div>
+                <h3>Decode Message</h3>
+                <p>Extract hidden messages from encoded images.</p>
+                <a href="/decode" class="btn btn-secondary">Start Decoding</a>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>How It Works</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h4>🎨 Supported Formats</h4>
+                    <p>JPG, JPEG, PNG (up to 50 MB)</p>
+                </div>
+                <div class="info-item">
+                    <h4>🔒 Security</h4>
+                    <p>Uses LSB steganography for secure message hiding</p>
+                </div>
+                <div class="info-item">
+                    <h4>⚡ Easy to Use</h4>
+                    <p>Simple upload, download workflow</p>
+                </div>
+                <div class="info-item">
+                    <h4>🗑️ Private</h4>
+                    <p>All files are automatically cleaned up after download</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Image Steganography Tool. All rights reserved.</p>
+    </footer>
+</body>
+</html>

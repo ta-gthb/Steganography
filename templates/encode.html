@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encode Message - Image Steganography</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-link">🔐 Image Steganography</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/encode">Encode</a>
+                <a href="/decode">Decode</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>📝 Encode Message in Image</h2>
+            <p>Upload an image and a message to hide it inside the image.</p>
+
+            <form id="encodeForm" class="form-container">
+                <div class="form-group">
+                    <label for="imageInput">Select Image File:</label>
+                    <div class="file-upload">
+                        <input type="file" id="imageInput" name="image" accept=".jpg,.jpeg,.png" required>
+                        <label for="imageInput" class="file-label">Choose Image (JPG, JPEG, PNG)</label>
+                    </div>
+                    <p class="form-hint">Maximum file size: 50 MB</p>
+                </div>
+
+                <div class="preview-container">
+                    <img id="imagePreview" class="image-preview" src="" alt="Image preview" style="display: none;">
+                </div>
+
+                <div class="form-group">
+                    <label for="messageInput">Message to Hide:</label>
+                    <textarea id="messageInput" name="message" placeholder="Enter your secret message here..." rows="6" maxlength="10000" required></textarea>
+                    <p class="form-hint"><span id="charCount">0</span> / 10000 characters</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large">Encode Message</button>
+                <a href="/" class="btn btn-secondary">Cancel</a>
+            </form>
+
+            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Encoding your message... Please wait.</p>
+            </div>
+
+            <div id="successMessage" class="alert alert-success" style="display: none;">
+                <h3>✅ Success!</h3>
+                <p>Your message has been encoded successfully.</p>
+                <div id="downloadSection">
+                    <p>Your encoded image is ready for download.</p>
+                    <a id="downloadLink" href="#" class="btn btn-primary" download>Download Encoded Image</a>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="alert alert-error" style="display: none;">
+                <h3>❌ Error</h3>
+                <p id="errorText"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Image Steganography Tool. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('encodeForm');
+        const imageInput = document.getElementById('imageInput');
+        const messageInput = document.getElementById('messageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const charCount = document.getElementById('charCount');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const downloadLink = document.getElementById('downloadLink');
+
+        // Image preview
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Character count
+        messageInput.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Reset messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            // Validate inputs
+            if (!imageInput.files.length) {
+                showError('Please select an image file');
+                return;
+            }
+
+            if (!messageInput.value.trim()) {
+                showError('Please enter a message to encode');
+                return;
+            }
+
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            form.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', imageInput.files[0]);
+                formData.append('message', messageInput.value);
+
+                const response = await fetch('/encode', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    downloadLink.href = data.download_url;
+                    successMessage.style.display = 'block';
+                } else {
+                    showError(data.error || 'An error occurred while encoding');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                loadingSpinner.style.display = 'none';
+                form.style.display = 'block';
+            }
+        });
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

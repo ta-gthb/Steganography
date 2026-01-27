@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decode Message - Image Steganography</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-link">🔐 Image Steganography</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/encode">Encode</a>
+                <a href="/decode">Decode</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-section">
+            <h2>🔍 Decode Message from Image</h2>
+            <p>Upload an encoded image to reveal the hidden message inside it.</p>
+
+            <form id="decodeForm" class="form-container">
+                <div class="form-group">
+                    <label for="imageInput">Select Encoded Image File:</label>
+                    <div class="file-upload">
+                        <input type="file" id="imageInput" name="image" accept=".jpg,.jpeg,.png" required>
+                        <label for="imageInput" class="file-label">Choose Image (JPG, JPEG, PNG)</label>
+                    </div>
+                    <p class="form-hint">Maximum file size: 50 MB</p>
+                </div>
+
+                <div class="preview-container">
+                    <img id="imagePreview" class="image-preview" src="" alt="Image preview" style="display: none;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large">Decode Message</button>
+                <a href="/" class="btn btn-secondary">Cancel</a>
+            </form>
+
+            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Decoding message... Please wait.</p>
+            </div>
+
+            <div id="successMessage" class="alert alert-success" style="display: none;">
+                <h3>✅ Message Found!</h3>
+                <div class="decoded-message-container">
+                    <label>Decoded Message:</label>
+                    <div class="decoded-message">
+                        <p id="decodedText"></p>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="copyMessage()">📋 Copy Message</button>
+                </div>
+            </div>
+
+            <div id="noMessageFound" class="alert alert-info" style="display: none;">
+                <h3>ℹ️ No Message Found</h3>
+                <p>This image does not contain any hidden message, or it was not encoded with this tool.</p>
+            </div>
+
+            <div id="errorMessage" class="alert alert-error" style="display: none;">
+                <h3>❌ Error</h3>
+                <p id="errorText"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Image Steganography Tool. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('decodeForm');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const successMessage = document.getElementById('successMessage');
+        const noMessageFound = document.getElementById('noMessageFound');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const decodedText = document.getElementById('decodedText');
+
+        // Image preview
+        imageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Reset messages
+            successMessage.style.display = 'none';
+            noMessageFound.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            // Validate input
+            if (!imageInput.files.length) {
+                showError('Please select an image file');
+                return;
+            }
+
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            form.style.display = 'none';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', imageInput.files[0]);
+
+                const response = await fetch('/decode', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.success && data.message) {
+                        decodedText.textContent = data.message;
+                        successMessage.style.display = 'block';
+                    } else {
+                        noMessageFound.style.display = 'block';
+                    }
+                } else {
+                    showError(data.error || 'An error occurred while decoding');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                loadingSpinner.style.display = 'none';
+                form.style.display = 'block';
+            }
+        });
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function copyMessage() {
+            const message = decodedText.textContent;
+            navigator.clipboard.writeText(message).then(() => {
+                alert('Message copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+    </script>
+</body>
+</html>
